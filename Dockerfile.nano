@@ -1,0 +1,5 @@
+FROM microsoft/dotnet:2.0-sdk-nanoserver
+WORKDIR /src
+COPY . .
+RUN dotnet restore; dotnet build
+CMD ["dotnet", "run"]

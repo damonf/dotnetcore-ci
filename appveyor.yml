@@ -1,0 +1,93 @@
+# Notes:
+#   - Minimal appveyor.yml file is an empty file. All sections are optional.
+#   - Indent each level of configuration with 2 spaces. Do not use tabs!
+#   - All section names are case-sensitive.
+#   - Section names should be unique on each level.
+
+#---------------------------------#
+#      general configuration      #
+#---------------------------------#
+
+version: '1.0.{build}'
+
+branches:
+  only:
+  - master
+
+#---------------------------------#
+#    environment configuration    #
+#---------------------------------#
+
+image: Visual Studio 2017
+
+init:
+  # Good practise, because Windows line endings are different from Unix/Linux ones
+  - cmd: git config --global core.autocrlf true
+
+clone_depth: 1
+
+environment:
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOCKER_USER:
+    secure: e57kW0OxLQFqMhvZxb9lsQ==
+  DOCKER_PASS:
+    secure: HPFA+E7k2qZg1L79hBhaKDhhqCev9IAkIFJ6UjJmsNs=
+
+install:
+  # Install repo specific stuff here
+
+#---------------------------------#
+#       build configuration       #
+#---------------------------------#
+
+before_build:
+  # Display some version info
+  - cmd: dotnet --version
+  - cmd: docker version
+
+build_script:
+  - docker image build -f Dockerfile.nano --tag damonf8086/dotnetcore-ci:nano .
+
+# to disable automatic builds
+#build: off
+
+#---------------------------------#
+#       tests configuration       #
+#---------------------------------#
+
+test_script:
+  - docker container run damonf8086/dotnetcore-ci:nano
+
+#---------------------------------#
+#      artifacts configuration    #
+#---------------------------------#
+
+#---------------------------------#
+#     deployment configuration    #
+#---------------------------------#
+
+deploy_script:
+  - docker login -u="%DOCKER_USER%" -p="%DOCKER_PASS%"
+  # - docker login -u="$env:DOCKER_USER" -p="$env:DOCKER_PASS"
+  - docker image push damonf8086/dotnetcore-ci:nano
+
+#---------------------------------#
+#        global handlers          #
+#---------------------------------#
+
+# on successful build
+on_success:
+  - echo Success!
+
+# on build failure
+on_failure:
+  - echo Failure!
+
+# after build failure or success
+on_finish:
+  - echo Finished!
+
+#---------------------------------#
+#         notifications           #
+#---------------------------------#
